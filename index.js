@@ -15,7 +15,7 @@ function sendMessage() {
     const message = userInput.value.trim();
     if (message === '') return;
 
-    else if (message === 'developer') {
+    if (message === 'developer') {
         userInput.value = '';
         appendMessage('user', message);
         setTimeout(() => {
@@ -29,12 +29,12 @@ function sendMessage() {
     appendMessage('user', message);
     userInput.value = '';
 
-    const url = 'https://open-ai21.p.rapidapi.com/conversationllama';
+    const url = 'https://cheapest-gpt-4-turbo-gpt-4-vision-chatgpt-openai-ai-api.p.rapidapi.com/v1/chat/completions';
     const options = {
         method: 'POST',
         headers: {
-            'x-rapidapi-key': '888fe54c96msh34fd4afc45d780fp18b684jsn7dfc050f8cbf',
-            'x-rapidapi-host': 'open-ai21.p.rapidapi.com',
+            'x-rapidapi-key': '888fe54c96msh34fd4afc45d780fp18b684jsn7dfc050f8cbf', // Substitua pela sua chave real
+            'x-rapidapi-host': 'cheapest-gpt-4-turbo-gpt-4-vision-chatgpt-openai-ai-api.p.rapidapi.com',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -44,30 +44,32 @@ function sendMessage() {
                     content: message
                 }
             ],
-            web_access: false
+            model: 'gpt-4o', // Modelo especificado na sua primeira mensagem
+            max_tokens: 100,
+            temperature: 0.9
         })
     };
 
     fetch(url, options)
-        .then(response => response.text()) // A API retorna uma string JSON
-        .then(text => {
-            try {
-                const data = JSON.parse(text);
-                if (data && data.result) {
-                    appendMessage('bot', data.result); // <- Corrigido aqui
-                } else {
-                    appendMessage('bot', 'Erro: resposta inesperada da API.');
-                }
-            } catch (e) {
-                appendMessage('bot', 'Erro ao interpretar a resposta da API.');
-                console.error('Erro ao fazer parse da resposta:', e);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json(); // A nova API retorna JSON diretamente
+        })
+        .then(data => {
+            // Verifica se a resposta contém a mensagem esperada
+            if (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                appendMessage('bot', data.choices[0].message.content);
+            } else {
+                appendMessage('bot', 'Erro: resposta inesperada da API.');
             }
 
             buttonIcon.classList.add('fa-solid', 'fa-paper-plane');
             buttonIcon.classList.remove('fas', 'fa-spinner', 'fa-pulse');
         })
         .catch((err) => {
-            console.error(err);
+            console.error('Erro ao fazer a requisição:', err);
             appendMessage('bot', 'Erro: não foi possível conectar à API.');
             buttonIcon.classList.add('fa-solid', 'fa-paper-plane');
             buttonIcon.classList.remove('fas', 'fa-spinner', 'fa-pulse');
